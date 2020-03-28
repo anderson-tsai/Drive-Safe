@@ -18,12 +18,8 @@ public class HomeViewModel extends ViewModel {
 //        mText.setValue("This is a home fragment.");
 //    }
 
-    public static void setAcceleration(float a) {
-        if (a > -0.3 && a < 0.3) {
-            mText.setValue("Linear Acceleration: Not Moving");
-        } else {
-            mText.setValue("Linear Acceleration: " + a + " m/s²");
-        }
+    public static void setAcceleration(float x, float y, float z) {
+        mText.postValue("X: " + x + " Y: " + y + "Z: " + z);
     }
 
     public LiveData<String> getText() {

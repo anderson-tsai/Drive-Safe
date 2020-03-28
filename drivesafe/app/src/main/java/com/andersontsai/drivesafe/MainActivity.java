@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(event.values[2]);
+        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2]);
         Log.d(TAG, "onSensorChanged: X:" + event.values[0]
                 + " Y:" + event.values[1]
                 + " Z:" + event.values[2]);

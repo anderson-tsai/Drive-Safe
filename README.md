@@ -1,2 +1,2 @@
 # Drive Safe
- Drive Safe is an app that strives to make your driving experience more safe and more fun.
+Drive Safe is an app that makes driving safe interactive and fun.
