@@ -1,17 +1,24 @@
 package com.andersontsai.drivesafe;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -23,13 +30,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     private AppBarConfiguration mAppBarConfiguration;
 
     private static final String TAG = "MainActivity";
+
+    private LocationManager locationManager;
+    private LocationListener locationListener;
+    private Context context;
+    TextView txtLocation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,25 +68,68 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        //Gets onboard accelerometer and begins listening
         Log.d(TAG, "onCreate: Initializing sensor services");
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         Log.d(TAG, "onCreate: Registered accelerometer listener");
+
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
     }
 
+
+
+    /** SensorEvent Listener Overrides */
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
 
+    /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
         HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2]);
         Log.d(TAG, "onSensorChanged: X:" + event.values[0]
-                + " Y:" + event.values[1]
+                + " Y: " + event.values[1]
                 + " Z:" + event.values[2]);
     }
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        txtLocation = (TextView) findViewById(R.id.location_text);
+        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude());
+        txtLocation.setText("Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Log.d(TAG,"Location disabled");
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Log.d(TAG,"Location enabled");
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        Log.d(TAG,"Status changed");
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

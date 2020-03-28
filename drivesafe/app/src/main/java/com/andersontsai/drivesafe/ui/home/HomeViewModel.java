@@ -11,18 +11,32 @@ import com.andersontsai.drivesafe.MainActivity;
 import java.util.List;
 
 public class HomeViewModel extends ViewModel {
-    private static MutableLiveData<String> mText = new MutableLiveData<>();
+    private static MutableLiveData<String> acceleration = new MutableLiveData<>();
+    private static MutableLiveData<String> location = new MutableLiveData<>();
 
 //    public HomeViewModel() {
 //        mText = new MutableLiveData<>();
 //        mText.setValue("This is a home fragment.");
 //    }
 
+    /** Sets acceleration to display X. Y, and Z acceleration. */
     public static void setAcceleration(float x, float y, float z) {
-        mText.postValue("X: " + x + " Y: " + y + "Z: " + z);
+        acceleration.postValue("X: " + x + " Y: " + y + "Z: " + z);
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    /** Returns acceleration. */
+    public LiveData<String> getAcceleration() {
+        return acceleration;
     }
+
+    /** Sets location to display LAT and LON. */
+    public static void setLocation(double lat, double lon) {
+        acceleration.postValue("Latitude: " + lat + " Longitude: " + lon);
+    }
+
+    /** Returns location */
+    public LiveData<String> getLocation() {
+        return location;
+    }
+
 }
