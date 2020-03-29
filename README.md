@@ -17,3 +17,6 @@ As a team, we decided that Speed should account for 75% of the Driver's score, a
    Although acceleration is less important than speed, it is still extremely important for the Driver to smoothly break and accelerate.
    Using the phone's accelerometer, the program grades the driver's accerleration states. Based off of DMV recommendations, our team has 
    developed test harnesses that remove points for unsafe breaking and acceleration.
+  
+ # Using FireStore storage
+ The user's score data is uploaded to the firStore system, and keeps the statistical data of each and every user's score.
