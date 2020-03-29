@@ -169,7 +169,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double speed = 0;
         if (prevTime != 0) { // if second time through iteration or more
             speed = computeSpeed(measure(prevLat, prevLong, location.getLatitude(), location.getLongitude()));
-            // speedLimit  = SpeedLimitFunction();
+            if (prevLong <= location.getLongitude()) {
+                speedLimit = speedLimit("Golden State Freeway", location.getLatitude(), location.getLongitude(), prevLat, prevLong);
+            }
+            else {
+                speedLimit = speedLimit("Golden State Freeway", prevLat, prevLong, location.getLatitude(), location.getLongitude());
+            }
         }
 
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
@@ -189,8 +194,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         prevTime = System.currentTimeMillis();
     }
     
-    public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
-        assert x1 <= x2 : "speedLimit: x1 must be less than x2.";
+    public int speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
+        // West to East ONLY
+        assert y1 <= y2 : "speedLimit: y1 must be less than y2.";
         String replace = name.replaceAll(" ", "%20");
         URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
@@ -205,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
         in.close();
-        return substr;
+        return Integer.parseInt(substr);
     }
 
     @Override
