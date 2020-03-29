@@ -611,7 +611,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         for (int i = 0; i < AccelerationOffenses.size(); i++ ) {
             runningSum += AccelerationOffenses.get(i);
         }
-        double AccelOffensePercentage = 1- ( ((double)runningSum) / drivenTime );
+        double AccelOffensePercentage = 1 - ( ((double)runningSum) / drivenTime);
 
         Log.d(TAG, "Speed Offense size: " + SpeedLimitOffenses.size());
 //        Log.d(TAG, "Acceleration Offense size: " + AccelerationOffenses.size());
