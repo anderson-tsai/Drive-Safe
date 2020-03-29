@@ -633,6 +633,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             score = 100;
         }
         scoreHistory.add(score);
+        updateScore();
         return score;
     }
 
