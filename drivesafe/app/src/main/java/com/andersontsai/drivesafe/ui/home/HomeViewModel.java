@@ -32,8 +32,8 @@ public class HomeViewModel extends ViewModel {
     }
 
     /** Sets location to display LAT and LON. */
-    public static void setLocation(double lat, double lon) {
-        acceleration.postValue("Latitude: " + lat + " Longitude: " + lon);
+    public static void setLocation(double lat, double lon, double speed) {
+        acceleration.postValue("Latitude: " + lat + " Longitude:" + lon + " Speed: " + speed);
     }
 
     /** Returns location */
