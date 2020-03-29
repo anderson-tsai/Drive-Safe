@@ -19,4 +19,4 @@ As a team, we decided that Speed should account for 75% of the Driver's score, a
    developed test harnesses that remove points for unsafe breaking and acceleration.
   
  # Using FireStore storage
- The user's score data is uploaded to the firStore system, and keeps the statistical data of each and every user's score.
+ The user's score data is uploaded to the fireStore system, and keeps the statistical data of each and every user's score. The database serves as a foundation for what could come to our app given more time, and the utility that the fireStore system can have.
