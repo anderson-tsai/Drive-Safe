@@ -170,24 +170,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     
     public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
-        // x1 <= x2
-
-            String replace = name.replaceAll(" ", "%20");
-            URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
-            BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-            String inputLine, substr = "-1";
-            while ((inputLine = in.readLine()) != null) {
-                String regex = "<tag k=\"maxspeed\" v=\".* ";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(inputLine);
-                if (matcher.find()) {
-                    substr = inputLine.substring(25, inputLine.lastIndexOf(' '));
-                    break;
-                }
+        assert x1 <= x2 : "speedLimit: x1 must be less than x2.";
+        String replace = name.replaceAll(" ", "%20");
+        URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
+        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+        String inputLine, substr = "-1";
+        while ((inputLine = in.readLine()) != null) {
+            String regex = "<tag k=\"maxspeed\" v=\".* ";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(inputLine);
+            if (matcher.find()) {
+                substr = inputLine.substring(25, inputLine.lastIndexOf(' '));
+                break;
             }
-            in.close();
-            return substr;
         }
+        in.close();
+        return substr;
+    }
 
     @Override
     public void onProviderDisabled(String provider) {
