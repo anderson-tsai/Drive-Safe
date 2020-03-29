@@ -48,6 +48,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -71,8 +72,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView username;
     TextView userEmail;
 
-    private Vector<Double> accelerationData = new Vector<Double>();
-    private Vector<Double> DataHistory = new Vector<Double>();
+    private ArrayList<Double> accelerationData = new ArrayList<>();
+    private ArrayList<Double> DataHistory = new ArrayList<>();
     private double[] linear_acceleration = new double[3];
 
     private long prevTime = 0;
@@ -164,25 +165,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         prevTime = System.currentTimeMillis();
     }
     
-    public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) {
+    public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
         // x1 <= x2
-        try {
+
             String replace = name.replaceAll(" ", "%20");
-
             URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
-
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(oracle.openStream()));
-
-            String inputLine, substr = "999999";
-
+            BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+            String inputLine, substr = "-1";
             while ((inputLine = in.readLine()) != null) {
                 String regex = "<tag k=\"maxspeed\" v=\".* ";
-
                 Pattern pattern = Pattern.compile(regex);
-
                 Matcher matcher = pattern.matcher(inputLine);
-
                 if (matcher.find()) {
                     substr = inputLine.substring(25, inputLine.lastIndexOf(' '));
                     break;
@@ -191,10 +184,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             in.close();
             return substr;
         }
-        catch (Exception e) {
-
-        }
-    }
 
     @Override
     public void onProviderDisabled(String provider) {
@@ -238,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
-
             if (resultCode == RESULT_OK) {
                 // Successfully signed in
                 final FirebaseFirestore db = FirebaseFirestore.getInstance();
