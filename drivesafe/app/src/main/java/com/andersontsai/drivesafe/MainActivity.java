@@ -109,11 +109,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private long lastSpeedOffenseTime = 0;
     private double maxAcceleration = 0;
 
+    private TextView theAccel;
+    private TextView theScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        theAccel = (TextView) findViewById(R.id.accelNumDisplay);
+        theScore = (TextView) findViewById(R.id.scoreNumDisplay);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 /*        FloatingActionButton fab = findViewById(R.id.fab);
@@ -260,10 +264,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double accelerationData = takeInNewAccelerationData();
         HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
-        TextView theAccel = (TextView) findViewById(R.id.accelNumDisplay);
+
         theAccel.setText(takeInNewAccelerationData() + "m/s^2");
-        TextView theScore = (TextView) findViewById(R.id.scoreNumDisplay);
-        theScore.setText(calculateScore());
+        theScore.setText(String.valueOf(calculateScore()));
         checkAcceleration(accelerationData);
 
 //        Log.d(TAG, "onSensorChanged: X:" + event.values[0]
@@ -294,10 +297,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
 //        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
 //                + " Speed: " + speed + "m/s");
-        TextView theLat = (TextView) findViewById(R.id.tempLat);
-        theLat.setText("Latitude: " + location.getLatitude());
-        TextView theLong = (TextView) findViewById(R.id.tempLong);
-        theLong.setText("Longitude: " + location.getLongitude());
+//        TextView theLat = (TextView) findViewById(R.id.tempLat);
+//        theLat.setText("Latitude: " + location.getLatitude());
+//        TextView theLong = (TextView) findViewById(R.id.tempLong);
+//        theLong.setText("Longitude: " + location.getLongitude());
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
         //TextView theLat = (TextView) findViewById(R.id.tempLat);

@@ -47,7 +47,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.115" />
-
+f
     <TextView
         android:id="@+id/speedTextDisplay"
         android:layout_width="wrap_content"
