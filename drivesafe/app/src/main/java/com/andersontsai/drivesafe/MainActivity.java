@@ -164,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         theLat.setText("Latitude: " + location.getLatitude());
         TextView theLong = (TextView) findViewById(R.id.tempLong);
         theLong.setText("Longitude: " + location.getLongitude());
+        //hello
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
