@@ -73,14 +73,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView userEmail;
 
     private ArrayList<Double> accelerationData = new ArrayList<>();
-    private ArrayList<Double> DataHistory = new ArrayList<>();
+    private ArrayList<Double> AccelDataHistory = new ArrayList<>();
     private double[] linear_acceleration = new double[3];
 
-    private long prevTime = 0;
+    private long prevTime = System.currentTimeMillis();
     private double prevLat = 0;
     private double prevLong = 0;
 
     private final int REQUEST_CODE = 69;
+
+    private int speedLimit = 20;
+
+
+    private static long absoluteStartTime = System.currentTimeMillis();
+    private Vector<Integer> SpeedLimitOffenses = new Vector<Integer>();
+    private Vector<Integer> AccelerationOffenses = new Vector<Integer>();
+    private long lastSpeedOffenseTime = 0;
+    private double maxAcceleration = 0;
 
 
     @Override
@@ -140,14 +149,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], takeInNewAccelerationData());
+
         linear_acceleration[0] = event.values[0];
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
+        double accelerationData = takeInNewAccelerationData();
+        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
 
-        Log.d(TAG, "onSensorChanged: X:" + event.values[0]
-                + " Y: " + event.values[1]
-                + " Z:" + event.values[2]);
+        checkAcceleration(accelerationData);
+
+//        Log.d(TAG, "onSensorChanged: X:" + event.values[0]
+//                + " Y: " + event.values[1]
+//                + " Z:" + event.values[2]);
     }
 
 
@@ -155,8 +168,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onLocationChanged(Location location) {
         double speed = 0;
         if (prevTime != 0) { // if second time through iteration or more
-            speed = computeSpeed(measure(prevLat,prevLong,location.getLatitude(),location.getLongitude()));
+            speed = computeSpeed(measure(prevLat, prevLong, location.getLatitude(), location.getLongitude()));
+            // speedLimit  = SpeedLimitFunction();
         }
+
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
 //        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
 //                + " Speed: " + speed + "m/s");
@@ -165,14 +180,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         TextView theLong = (TextView) findViewById(R.id.tempLong);
         theLong.setText("Longitude: " + location.getLongitude());
         //hello
+
+        checkSpeed(speed);
+
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
     }
     
     public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
-        // West to East ONLY
-        assert y1 <= y2 : "speedLimit: y1 must be less than y2.";
+        assert x1 <= x2 : "speedLimit: x1 must be less than x2.";
         String replace = name.replaceAll(" ", "%20");
         URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
@@ -321,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             runningSum += Math.pow(accelerationData.get(i) - mean,2);
         }
         standardDeviation = Math.sqrt(runningSum/accelerationData.size());
-        Log.d(TAG,"standard deviation" + standardDeviation);
+        //Log.d(TAG,"standard deviation" + standardDeviation);
 
         if (Math.abs(mean - newData) < standardDeviation * 20) {
             for (int i = 0; i < accelerationData.size() - 1; i++) {
@@ -330,11 +347,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             accelerationData.set(accelerationData.size()-1, newData);
         }
-        else {
-            Log.d(TAG,"not going through");
-        }
-        DataHistory.add(mean);
-        Log.d(TAG,"mean: " + mean);
+        AccelDataHistory.add(mean);
+        //Log.d(TAG,"mean: " + mean);
         return mean;
 
     }
@@ -351,6 +365,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        return d * 1000; // meters
 //    }
 
+    //finds the distance between latitude and longitude points in meters
     public static double measure(double lat1,
                                   double lon1, double lat2,
                                   double lon2)
@@ -383,6 +398,85 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public double computeSpeed(double meters) {
           double timeSpent = System.currentTimeMillis() - prevTime;
-          return meters / timeSpent;
+        Log.d(TAG, "timeTaken: " + timeSpent);
+          return meters / (timeSpent/1000);
+    }
+
+    public void checkSpeed(double speed) {
+        if ((speed > (speedLimit + 7))
+                && (speed < 53) && (speed > 0)
+                && ((System.currentTimeMillis() - lastSpeedOffenseTime) > 5000))
+        {
+            double speedDifference = speed - speedLimit;
+            lastSpeedOffenseTime = System.currentTimeMillis();
+            if (speedDifference < 10) {
+                SpeedLimitOffenses.add(600);
+            }
+            if(speedDifference < 12) {
+                SpeedLimitOffenses.add(1000);
+            }
+            else if (speedDifference < 15) {
+                SpeedLimitOffenses.add(2000);
+            }
+            else if (speedDifference < 17) {
+                SpeedLimitOffenses.add(3500);
+            }
+            else if (speedDifference < 20) {
+                SpeedLimitOffenses.add(4500);
+            }
+            else {
+                SpeedLimitOffenses.add(4800);
+            }
+
+        }
+        calculateScore();
+    }
+
+    public void checkAcceleration(double acceleration) {
+        if (acceleration > 2.950464 || maxAcceleration != 0) { //in m/s^2
+            if (maxAcceleration < acceleration) {
+                maxAcceleration = acceleration;
+                return;
+            }
+            if (maxAcceleration < 3.442208) {
+                AccelerationOffenses.add(1);
+            }
+            else if (maxAcceleration < 4) {
+                AccelerationOffenses.add(2);
+            }
+            else if (maxAcceleration < 4.57200) {
+                AccelerationOffenses.add(3);
+            }
+            else {
+                AccelerationOffenses.add(4);
+            }
+            maxAcceleration = 0;
+        }
+        calculateScore();
+    }
+
+    public int calculateScore() {
+        long drivenTime = (System.currentTimeMillis() - absoluteStartTime);
+        int runningSum = 0;
+
+
+        for (int i = 0; i < SpeedLimitOffenses.size(); i++ ) {
+            runningSum += SpeedLimitOffenses.get(i);
+        }
+        double SpeedOffensePercentage = 1- ( ((double)runningSum) / drivenTime );
+
+
+        runningSum = 0;
+        for (int i = 0; i < AccelerationOffenses.size(); i++ ) {
+            runningSum += AccelerationOffenses.get(i);
+        }
+        double AccelOffensePercentage = 1- ( ((double)runningSum) / drivenTime );
+
+//        Log.d(TAG, "Speed Offense size: " + SpeedLimitOffenses.size());
+//        Log.d(TAG, "Acceleration Offense size: " + AccelerationOffenses.size());
+        int score = (int)(SpeedOffensePercentage * 75) + (int)(AccelOffensePercentage * 25);
+//        Log.d(TAG, "score: " + score);
+        return score;
+
     }
 }
