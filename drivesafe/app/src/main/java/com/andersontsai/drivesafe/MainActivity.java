@@ -171,10 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
     
-        //        New Code
-    public String speedLimit(String name, Double x1, Double x2, Double y1, Double y2) {
-        // Thread.sleep(2000);
-        // Parameter name, x1, y1, x2, y2 (Double)
+    public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) {
         // x1 <= x2
         try {
             String replace = name.replaceAll(" ", "%20");
@@ -205,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         }
     }
-//        End Code
 
     @Override
     public void onProviderDisabled(String provider) {
