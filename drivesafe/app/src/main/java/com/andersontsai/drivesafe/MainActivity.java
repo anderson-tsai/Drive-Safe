@@ -8,6 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,7 +19,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
-
+import android.location.Address;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -53,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView userEmail;
 
     private ArrayList<Double> accelerationData = new ArrayList<>();
-    private ArrayList<Double> AccelDataHistory = new ArrayList<>();
+    private ArrayList<Integer> scoreHistory = new ArrayList<>();
     private double[] linear_acceleration = new double[3];
 
     private long prevTime = System.currentTimeMillis();
@@ -247,12 +249,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-//        HomeViewModel.setAcceleration(takeInNewAccelerationData());
         linear_acceleration[0] = event.values[0];
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-//        HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
         BigDecimal bd = new BigDecimal(accelerationData);
         bd = bd.round(new MathContext(2));
@@ -282,7 +282,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
-//        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
 
@@ -304,9 +303,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //TextView theLong = (TextView) findViewById(R.id.tempLong);
         //theLong.setText("Longitude: " + location.getLongitude());
         //hello
-//        theSpeed.setText(speed + "m/s");
+        theSpeed.setText(speed + "m/s");
         checkSpeed(speed);
         // checkSpeed(25);
+
+        try {
+            String address = getStreet(33.989819, -117.732582);
+            Log.d(TAG, "address: " + address);
+            int index = 0;
+            while (address.charAt(index) != ' ') {
+                index++;
+            }
+            index++;
+            String street = "";
+            while (address.charAt(index) != ',') {
+                street = street + address.charAt(index);
+                index++;
+            }
+            Log.d(TAG, "street:" + street);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
@@ -434,8 +451,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DocumentReference docRef = db.collection("users").document(firebaseUser.getEmail()).collection("Score").document();
-        docRef.set();
-
+        docRef.set(getAverageScore());
     }
 
     @Override
@@ -482,7 +498,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             accelerationData.set(accelerationData.size()-1, newData);
         }
-        AccelDataHistory.add(mean);
         //Log.d(TAG,"mean: " + mean);
         return mean;
 
@@ -617,6 +632,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (score > 100) { //not needed, but good for full proofing
             score = 100;
         }
+        scoreHistory.add(score);
         return score;
+    }
+
+    public double getAverageScore() {
+        double mean = 0;
+        long runningSum = 0;
+        for (int i = 0; i < scoreHistory.size(); i++) {
+            runningSum += scoreHistory.get(i);
+        }
+        mean = runningSum / scoreHistory.size();
+
+        return mean;
+
+    }
+
+    public String getStreet(double latitude, double longitude) throws IOException {
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(this, Locale.getDefault());
+        String address = "";
+
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+            String city = addresses.get(0).getLocality();
+            String state = addresses.get(0).getAdminArea();
+            String country = addresses.get(0).getCountryName();
+            String postalCode = addresses.get(0).getPostalCode();
+            String knownName = addresses.get(0).getFeatureName(); // Only if available else return NULL
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+        return address;
     }
 }
