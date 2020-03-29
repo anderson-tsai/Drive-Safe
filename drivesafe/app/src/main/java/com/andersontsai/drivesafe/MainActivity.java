@@ -1,8 +1,6 @@
 package com.andersontsai.drivesafe;
 
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,21 +12,14 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.service.voice.VoiceInteractionService;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.location.Address;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -40,25 +31,19 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.andersontsai.drivesafe.ui.home.HomeViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -264,12 +249,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(takeInNewAccelerationData());
         linear_acceleration[0] = event.values[0];
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-        HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
         BigDecimal bd = new BigDecimal(accelerationData);
         bd = bd.round(new MathContext(2));
@@ -287,8 +270,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onLocationChanged(Location location) {
         double speed = 0;
-
-        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
+        if (prevTime != 0) { // if second time through iteration or more
+            speed = computeSpeed(measure(prevLat, prevLong, location.getLatitude(), location.getLongitude()));
+            try {
+                if (prevLong <= location.getLongitude()) {
+                    speedLimit = speedLimit("Golden State Freeway", location.getLatitude(), location.getLongitude(), prevLat, prevLong);
+                } else {
+                    speedLimit = speedLimit("Golden State Freeway", prevLat, prevLong, location.getLatitude(), location.getLongitude());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
 
@@ -328,18 +321,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 index++;
             }
             Log.d(TAG, "street:" + street);
-            if (prevTime != 0) { // if second time through iteration or more
-                speed = computeSpeed(measure(prevLat, prevLong, location.getLatitude(), location.getLongitude()));
-                try {
-                    if (prevLong <= location.getLongitude()) {
-                        speedLimit = speedLimit(street, location.getLatitude(), location.getLongitude(), prevLat, prevLong);
-                    } else {
-                        speedLimit = speedLimit(street, prevLat, prevLong, location.getLatitude(), location.getLongitude());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -349,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         prevTime = System.currentTimeMillis();
         recordingTime = System.currentTimeMillis();
     }
-    
+
     public int speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
         // West to East ONLY
         assert y1 <= y2 : "speedLimit: y1 must be less than y2.";
@@ -464,6 +445,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         }
+    }
+
+    public void updateScore() {
+        Map<String, Object> newScore = new HashMap<>();
+        newScore.put("Score", getAverageScore());
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        DocumentReference docRef = db.collection("users").document(firebaseUser.getEmail());
+        docRef.update(newScore);
     }
 
     @Override
@@ -679,9 +669,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
         return address;
     }
 }
