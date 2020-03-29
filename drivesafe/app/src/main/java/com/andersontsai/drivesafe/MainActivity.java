@@ -154,11 +154,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-        //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
-        
-        TextView theAccel = (TextView) findViewById(R.id.accelDisplay);
-        theAccel.setText("Acceleration: " + takeInNewAccelerationData() + "m/s^2");
-        
+        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
+
         checkAcceleration(accelerationData);
 
 //        Log.d(TAG, "onSensorChanged: X:" + event.values[0]
@@ -176,16 +173,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
-        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-                + " Speed: " + speed + "m/s");
+//        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+//                + " Speed: " + speed + "m/s");
         TextView theLat = (TextView) findViewById(R.id.tempLat);
         theLat.setText("Latitude: " + location.getLatitude());
         TextView theLong = (TextView) findViewById(R.id.tempLong);
         theLong.setText("Longitude: " + location.getLongitude());
-        TextView theSpeed = (TextView) findViewById(R.id.speedDisplay);
-        theSpeed.setText("Speed: " + speed + "m/s");
+        //hello
 
         checkSpeed(speed);
+        // checkSpeed(25);
 
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
@@ -407,29 +404,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void checkSpeed(double speed) {
-        if ((speed > (speedLimit + 7))
-                && (speed < 53) && (speed > 0)
+        if ((speed > (speedLimit + 2.2352)) //  2.2352 = 5mph over the speed limit in m/s
+                && (speed < 54) && (speed > 0)
                 && ((System.currentTimeMillis() - lastSpeedOffenseTime) > 5000))
         {
             double speedDifference = speed - speedLimit;
             lastSpeedOffenseTime = System.currentTimeMillis();
-            if (speedDifference < 10) {
-                SpeedLimitOffenses.add(600);
+            if (speedDifference < 4.4704) {
+                SpeedLimitOffenses.add(3600);
             }
-            if(speedDifference < 12) {
-                SpeedLimitOffenses.add(1000);
+            if(speedDifference < 5.36448) {
+                SpeedLimitOffenses.add(4000);
             }
-            else if (speedDifference < 15) {
-                SpeedLimitOffenses.add(2000);
+            else if (speedDifference < 6.7056) {
+                SpeedLimitOffenses.add(5000);
             }
-            else if (speedDifference < 17) {
-                SpeedLimitOffenses.add(3500);
+            else if (speedDifference < 7.59968) {
+                SpeedLimitOffenses.add(6500);
             }
-            else if (speedDifference < 20) {
-                SpeedLimitOffenses.add(4500);
+            else if (speedDifference < 8.9408) {
+                SpeedLimitOffenses.add(7500);
             }
             else {
-                SpeedLimitOffenses.add(4800);
+                SpeedLimitOffenses.add(8800);
             }
 
         }
@@ -476,10 +473,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         double AccelOffensePercentage = 1- ( ((double)runningSum) / drivenTime );
 
-//        Log.d(TAG, "Speed Offense size: " + SpeedLimitOffenses.size());
+        Log.d(TAG, "Speed Offense size: " + SpeedLimitOffenses.size());
 //        Log.d(TAG, "Acceleration Offense size: " + AccelerationOffenses.size());
         int score = (int)(SpeedOffensePercentage * 75) + (int)(AccelOffensePercentage * 25);
-//        Log.d(TAG, "score: " + score);
+        Log.d(TAG, "score: " + score);
+        if (score < 0) { // an extremely bad driver minimizes their score at 0
+            score = 0;
+        }
+        if (score > 100) { //not needed, but good for full proofing
+            score = 100;
+        }
         return score;
 
     }
