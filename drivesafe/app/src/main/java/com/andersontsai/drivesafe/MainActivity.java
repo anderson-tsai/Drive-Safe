@@ -61,6 +61,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView theAccel;
     private TextView theScore;
+    private TextView theSpeed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         theAccel = (TextView) findViewById(R.id.accelNumDisplay);
         theScore = (TextView) findViewById(R.id.scoreNumDisplay);
+        theSpeed = (TextView) findViewById(R.id.speedNumDisplay);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 /*        FloatingActionButton fab = findViewById(R.id.fab);
@@ -264,8 +268,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double accelerationData = takeInNewAccelerationData();
         HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
-
-        theAccel.setText(takeInNewAccelerationData() + "m/s^2");
+        BigDecimal bd = new BigDecimal(accelerationData);
+        bd = bd.round(new MathContext(2));
+        double roundedAccel = bd.doubleValue();
+        theAccel.setText(roundedAccel + " m/s^2");
         theScore.setText(String.valueOf(calculateScore()));
         checkAcceleration(accelerationData);
 
@@ -301,6 +307,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        theLat.setText("Latitude: " + location.getLatitude());
 //        TextView theLong = (TextView) findViewById(R.id.tempLong);
 //        theLong.setText("Longitude: " + location.getLongitude());
+        BigDecimal bd = new BigDecimal(speed);
+        bd = bd.round(new MathContext(2));
+        double roundedSpeed = bd.doubleValue();
+        theSpeed.setText(roundedSpeed + " m/s");
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
         //TextView theLat = (TextView) findViewById(R.id.tempLat);
@@ -308,7 +318,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //TextView theLong = (TextView) findViewById(R.id.tempLong);
         //theLong.setText("Longitude: " + location.getLongitude());
         //hello
-        TextView theSpeed = (TextView) findViewById(R.id.speedNumDisplay);
         theSpeed.setText(speed + "m/s");
         checkSpeed(speed);
         // checkSpeed(25);
