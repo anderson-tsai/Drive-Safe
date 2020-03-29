@@ -17,57 +17,91 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
-    
+
 
     <TextView
-        android:id="@+id/tempLat"
+        android:id="@+id/scoreTextDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Score"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="25sp"
+        android:typeface="monospace"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.09"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0225" />
+        app:layout_constraintVertical_bias="0.024" />
 
     <TextView
-        android:id="@+id/tempLong"
+        android:id="@+id/scoreNumDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="tempScore"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="55sp"
+        android:typeface="monospace"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.11"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0725" />
+        app:layout_constraintVertical_bias="0.115" />
 
     <TextView
-        android:id="@+id/speedDisplay"
+        android:id="@+id/speedTextDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Speed"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="25sp"
+        android:typeface="monospace"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.04"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.1225" />
+        app:layout_constraintVertical_bias="0.338" />
 
     <TextView
-        android:id="@+id/accelDisplay"
+        android:id="@+id/speedNumDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="tempSpeed"
         android:textColor="#000000"
-        android:textSize="15sp"
+        android:textSize="30sp"
+        android:typeface="monospace"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.11"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.1725" />
+        app:layout_constraintVertical_bias="0.438" />
+
+    <TextView
+        android:id="@+id/accelTextDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Acceleration"
+        android:textColor="#000000"
+        android:textSize="25sp"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.617" />
+
+    <TextView
+        android:id="@+id/accelNumDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="tempAccel"
+        android:textColor="#000000"
+        android:textSize="30sp"
+        android:typeface="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.727" />
 </androidx.constraintlayout.widget.ConstraintLayout>
