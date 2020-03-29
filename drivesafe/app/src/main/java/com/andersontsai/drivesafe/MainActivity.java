@@ -29,8 +29,6 @@ import com.andersontsai.drivesafe.ui.home.HomeViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 import java.util.Vector;
@@ -220,16 +218,46 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public double measure(double lat1, double lon1, double lat2, double lon2){  // geo measurement function
-        double R = 6378.137; // Radius of earth in KM
-        double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
-        double dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                        Math.sin(dLon/2) * Math.sin(dLon/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double d = R * c;
-        return d * 1000; // meters
+//    public double measure(double lat1, double lon1, double lat2, double lon2){  // geo measurement function
+//        double R = 6378.137; // Radius of earth in KM
+//        double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+//        double dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+//        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+//                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+//                        Math.sin(dLon/2) * Math.sin(dLon/2);
+//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+//        double d = R * c;
+//        return d * 1000; // meters
+//    }
+
+    public static double measure(double lat1,
+                                  double lon1, double lat2,
+                                  double lon2)
+    {
+
+        // The math module contains a function
+        // named toRadians which converts from
+        // degrees to radians.
+        lon1 = Math.toRadians(lon1);
+        lon2 = Math.toRadians(lon2);
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        // Haversine formula
+        double dlon = lon2 - lon1;
+        double dlat = lat2 - lat1;
+        double a = Math.pow(Math.sin(dlat / 2), 2)
+                + Math.cos(lat1) * Math.cos(lat2)
+                * Math.pow(Math.sin(dlon / 2),2);
+
+        double c = 2 * Math.asin(Math.sqrt(a));
+
+        // Radius of earth in kilometers. Use 3956
+        // for miles
+        double r = 6371;
+
+        // calculate the result
+        return(c * r) * 1000;
     }
 
     public double computeSpeed(double meters) {
