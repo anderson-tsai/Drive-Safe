@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationListener locationListener;
     private Context context;
 
-    TextView txtLocation;
     TextView username;
     TextView userEmail;
 
@@ -149,22 +148,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onLocationChanged(Location location) {
-        double speed= 0;
-        txtLocation = (TextView) findViewById(R.id.location_text);
-
-
-        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+        double speed = 0;
         if (prevTime != 0) { // if second time through iteration or more
             speed = computeSpeed(measure(prevLat,prevLong,location.getLatitude(),location.getLongitude()));
         }
-        txtLocation.setText("Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-                + " Speed: " + speed + "m/s");
         HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
+        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+                + " Speed: " + speed + "m/s");
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
-
-
     }
 
     @Override

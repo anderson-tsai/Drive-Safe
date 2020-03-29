@@ -21,10 +21,8 @@ public class HomeViewModel extends ViewModel {
 
     /** Sets acceleration to display X. Y, and Z acceleration. */
     public static void setAcceleration(float x, float y, float z, double accelerate) {
-        //acceleration.postValue("X: " + x + " Y: " + y + "Z: " + z);
         acceleration.postValue("acceleration: " + accelerate + " m/s^2");
     }
-
 
     /** Returns acceleration. */
     public LiveData<String> getAcceleration() {
@@ -33,7 +31,7 @@ public class HomeViewModel extends ViewModel {
 
     /** Sets location to display LAT and LON. */
     public static void setLocation(double lat, double lon, double speed) {
-        acceleration.postValue("Latitude: " + lat + " Longitude:" + lon + " Speed: " + speed);
+        location.postValue("Latitude: " + lat + " Longitude: " + lon + " Speed: " + speed);
     }
 
     /** Returns location */

@@ -30,6 +30,7 @@ public class HomeFragment extends Fragment {
                 acceleration.setText(s);
             }
         });
+
         final TextView location = root.findViewById(R.id.location_text);
         homeViewModel.getLocation().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
