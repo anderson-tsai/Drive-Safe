@@ -54,6 +54,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import java.net.*;
+import java.io.*;
+import java.util.regex.*; 
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -158,6 +162,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
+    }
+    
+    public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) {
+        // x1 <= x2
+        try {
+            String replace = name.replaceAll(" ", "%20");
+
+            URL oracle = new URL("https://overpass-api.de/api/interpreter?data=way[name=\"" + replace + "\"](" + x1 + ',' + y1 + ',' + x2 + ',' + y2 + ")[maxspeed];out;");
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(oracle.openStream()));
+
+            String inputLine, substr = "999999";
+
+            while ((inputLine = in.readLine()) != null) {
+                String regex = "<tag k=\"maxspeed\" v=\".* ";
+
+                Pattern pattern = Pattern.compile(regex);
+
+                Matcher matcher = pattern.matcher(inputLine);
+
+                if (matcher.find()) {
+                    substr = inputLine.substring(25, inputLine.lastIndexOf(' '));
+                    break;
+                }
+            }
+            in.close();
+            return substr;
+        }
+        catch (Exception e) {
+
+        }
     }
 
     @Override
