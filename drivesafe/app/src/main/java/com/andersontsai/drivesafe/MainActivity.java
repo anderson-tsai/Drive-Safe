@@ -261,12 +261,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(takeInNewAccelerationData());
+//        HomeViewModel.setAcceleration(takeInNewAccelerationData());
         linear_acceleration[0] = event.values[0];
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-        HomeViewModel.setAcceleration(accelerationData);
+//        HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
         BigDecimal bd = new BigDecimal(accelerationData);
         bd = bd.round(new MathContext(2));
@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
-        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
+//        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
 
@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //TextView theLong = (TextView) findViewById(R.id.tempLong);
         //theLong.setText("Longitude: " + location.getLongitude());
         //hello
-        theSpeed.setText(speed + "m/s");
+//        theSpeed.setText(speed + "m/s");
         checkSpeed(speed);
         // checkSpeed(25);
 
@@ -611,7 +611,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         for (int i = 0; i < AccelerationOffenses.size(); i++ ) {
             runningSum += AccelerationOffenses.get(i);
         }
-        double AccelOffensePercentage = 1 - ( ((double)runningSum) / drivenTime);
+        double AccelOffensePercentage = 1- ( ((double)runningSum) / drivenTime );
 
         Log.d(TAG, "Speed Offense size: " + SpeedLimitOffenses.size());
 //        Log.d(TAG, "Acceleration Offense size: " + AccelerationOffenses.size());
