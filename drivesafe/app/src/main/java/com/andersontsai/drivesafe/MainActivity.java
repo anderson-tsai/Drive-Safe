@@ -272,16 +272,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double speed = 0;
         if (prevTime != 0) { // if second time through iteration or more
             speed = computeSpeed(measure(prevLat, prevLong, location.getLatitude(), location.getLongitude()));
-            try {
-                if (prevLong <= location.getLongitude()) {
-                    speedLimit = speedLimit("Golden State Freeway", location.getLatitude(), location.getLongitude(), prevLat, prevLong);
-                } else {
-                    speedLimit = speedLimit("Golden State Freeway", prevLat, prevLong, location.getLatitude(), location.getLongitude());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
+       // HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
 
@@ -302,29 +294,49 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //theLat.setText("Latitude: " + location.getLatitude());
         //TextView theLong = (TextView) findViewById(R.id.tempLong);
         //theLong.setText("Longitude: " + location.getLongitude());
-        //hello
+
         theSpeed.setText(speed + "m/s");
+
+
         checkSpeed(speed);
         // checkSpeed(25);
 
+
+        String street = "";
         try {
-            String address = getStreet(33.989819, -117.732582);
+            String address = getStreet(location.getLatitude(), location.getLongitude());
             Log.d(TAG, "address: " + address);
             int index = 0;
             while (address.charAt(index) != ' ') {
                 index++;
             }
             index++;
-            String street = "";
+
             while (address.charAt(index) != ',') {
                 street = street + address.charAt(index);
                 index++;
             }
             Log.d(TAG, "street:" + street);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        if (prevTime != 0) {
+            try {
+                if (prevLong > location.getLongitude()) {
+                    speedLimit = speedLimit(street, location.getLatitude(), location.getLongitude(), prevLat, prevLong);
+                } else {
+                    speedLimit = speedLimit(street, prevLat, prevLong, location.getLatitude(), location.getLongitude());
+                }
+                Log.d(TAG, "speed Limit: " + speedLimit);
+            } catch (Exception e) {
+                Log.d(TAG, "accept");
+                e.printStackTrace();
+            }
+        }
+
+        //speedLimit = 20;
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
@@ -591,16 +603,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
             if (maxAcceleration < 3.442208) {
-                AccelerationOffenses.add(1);
+                AccelerationOffenses.add(3600);
             }
             else if (maxAcceleration < 4) {
-                AccelerationOffenses.add(2);
+                AccelerationOffenses.add(4000);
             }
             else if (maxAcceleration < 4.57200) {
-                AccelerationOffenses.add(3);
+                AccelerationOffenses.add(5000);
             }
             else {
-                AccelerationOffenses.add(4);
+                AccelerationOffenses.add(6500);
             }
             maxAcceleration = 0;
         }
