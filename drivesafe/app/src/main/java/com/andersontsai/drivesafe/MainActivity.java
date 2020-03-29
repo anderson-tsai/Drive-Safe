@@ -1,6 +1,8 @@
 package com.andersontsai.drivesafe;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,7 +13,14 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.service.voice.VoiceInteractionService;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -22,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -47,6 +57,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +70,7 @@ import java.util.Vector;
 
 import java.net.*;
 import java.io.*;
-import java.util.regex.*; 
+import java.util.regex.*;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
@@ -68,6 +81,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationManager locationManager;
     private LocationListener locationListener;
     private Context context;
+
+    MediaRecorder recorder;
+    private long recordingTime = 0;
+    private static String fileName = null;
+    private StorageReference storage;
 
     TextView username;
     TextView userEmail;
@@ -109,7 +127,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        //Gets onboard accelerometer and begins listening
+        askPermissions();
+
+        //Gets onboard accelerometer and begins listening for accelerometer output
         Log.d(TAG, "onCreate: Initializing sensor services");
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
@@ -129,18 +149,102 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (LocationListener) this);
         startLogin();
+
+        fileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+        fileName += "/recorded_audio.3gp";
+        storage = FirebaseStorage.getInstance().getReference("users");
+        startRecording();
     }
+
+    /** Request permissions needed to run app. */
+    public boolean askPermissions() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+            // Request location and microphone access
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_CODE);
+            return false;
+        }
+        return true;
+    }
+
+    private void startRecording() {
+//        if ((System.currentTimeMillis() - recordingTime) % 15000 == 0) {
+//            stopRecording();
+//        }
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setOutputFile(fileName);
+
+        try {
+            recorder.prepare();
+            recorder.start();
+            Log.d(TAG, "Started recording");
+        } catch (IOException e) {
+            Log.e(TAG, "prepare() failed");
+        }
+    }
+
+    public void stopRecording() {
+        recorder.stop();
+        recorder.release();
+        recorder = null;
+        uploadAudio();
+        startRecording();
+//        createSoundFile();
+    }
+
+    private void uploadAudio() {
+        StorageReference filepath = storage.child(userEmail.getText().toString()).child("driving_audio.3gp");
+        Uri uri = Uri.fromFile(new File(fileName));
+        filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Log.d(TAG, "Uploaded audio file.");
+            }
+        });
+    }
+
+/*    private void createSoundFile() {
+        //creating content values of size 4
+        ContentValues values = new ContentValues(4);
+        long current = System.currentTimeMillis();
+        values.put(MediaStore.Audio.Media.TITLE, "audio" + audio.getName());
+        values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
+        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
+        values.put(MediaStore.Audio.Media.DATA, audio.getAbsolutePath());
+
+        //creating content resolver and storing it in the external content uri
+        ContentResolver contentResolver = getContentResolver();
+        Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Uri newUri = contentResolver.insert(base, values);
+
+        //sending broadcast message to scan the media file so that it can be available
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
+    }*/
 
     /** SensorEvent Listener Overrides */
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], takeInNewAccelerationData());
+        HomeViewModel.setAcceleration(takeInNewAccelerationData());
         linear_acceleration[0] = event.values[0];
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
@@ -157,17 +261,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (prevTime != 0) { // if second time through iteration or more
             speed = computeSpeed(measure(prevLat,prevLong,location.getLatitude(),location.getLongitude()));
         }
-        //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
-//        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-//                + " Speed: " + speed + "m/s");
+        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
+        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+                + " Speed: " + speed + "m/s");
         TextView theLat = (TextView) findViewById(R.id.tempLat);
         theLat.setText("Latitude: " + location.getLatitude());
         TextView theLong = (TextView) findViewById(R.id.tempLong);
         theLong.setText("Longitude: " + location.getLongitude());
-        //hello
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
+        recordingTime = System.currentTimeMillis();
     }
     
     public String speedLimit(String name, Double x1, Double y1, Double x2, Double y2) throws IOException{
@@ -381,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public double computeSpeed(double meters) {
-          double timeSpent = System.currentTimeMillis() - prevTime;
-          return meters / timeSpent;
+          double timeSpent = (System.currentTimeMillis() - prevTime)/1000.0;
+          return meters;
     }
 }

@@ -20,7 +20,7 @@ public class HomeViewModel extends ViewModel {
 //    }
 
     /** Sets acceleration to display X. Y, and Z acceleration. */
-    public static void setAcceleration(float x, float y, float z, double accelerate) {
+    public static void setAcceleration(double accelerate) {
         acceleration.postValue("acceleration: " + accelerate + " m/s^2");
     }
 
