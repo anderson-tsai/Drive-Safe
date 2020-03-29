@@ -30,6 +30,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.List;
+import java.util.Vector;
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -40,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationListener locationListener;
     private Context context;
     TextView txtLocation;
+
+    private Vector<Double> accelerationData = new Vector<Double>();
+    private Vector<Double> DataHistory = new Vector<Double>();
+    private double[] linear_acceleration = new double[3];
 
 
     @Override
@@ -100,7 +107,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     /** Calls HomeViewModel to display acceleration, and logs output from accelerometer. */
     @Override
     public void onSensorChanged(SensorEvent event) {
-        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2]);
+        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], takeInNewAccelerationData());
+        linear_acceleration[0] = event.values[0];
+        linear_acceleration[1] = event.values[1];
+        linear_acceleration[2] = event.values[2];
+
         Log.d(TAG, "onSensorChanged: X:" + event.values[0]
                 + " Y: " + event.values[1]
                 + " Z:" + event.values[2]);
@@ -113,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         HomeViewModel.setLocation(location.getLongitude(), location.getLatitude());
         txtLocation.setText("Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+
     }
 
     @Override
@@ -143,5 +155,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public double getAccelerationData() {
+
+        return Math.sqrt(
+                Math.pow(linear_acceleration[0],2)
+                        + Math.pow(linear_acceleration[1],2)
+                        + Math.pow(linear_acceleration[2],2)
+        );
+    }
+
+    public double takeInNewAccelerationData() {
+        double newData = getAccelerationData();
+        double mean = 0;
+        double runningSum = 0;
+        double standardDeviation = 0;
+
+        if (accelerationData.size() < 100) {
+            accelerationData.add(newData);
+        }
+        for (int i = 0; i < accelerationData.size(); i++) { // mean
+            runningSum += accelerationData.get(i);
+        }
+        mean = runningSum / accelerationData.size();
+
+        runningSum = 0;
+        for (int i = 0; i < accelerationData.size(); i++) { // standardDeviation
+            runningSum += Math.pow(accelerationData.get(i) - mean,2);
+        }
+        standardDeviation = Math.sqrt(runningSum/accelerationData.size());
+        Log.d(TAG,"standard deviation" + standardDeviation);
+
+        if (Math.abs(mean - newData) < standardDeviation * 10) {
+            for (int i = 0; i < accelerationData.size() - 1; i++) {
+                accelerationData.set(i, accelerationData.get(i + 1));
+                //Log.d(TAG,"doing the deed");
+            }
+            accelerationData.set(accelerationData.size()-1, newData);
+        }
+        else {
+            Log.d(TAG,"not going through");
+        }
+        DataHistory.add(mean);
+        Log.d(TAG,"mean: " + mean);
+        return mean;
+
     }
 }
