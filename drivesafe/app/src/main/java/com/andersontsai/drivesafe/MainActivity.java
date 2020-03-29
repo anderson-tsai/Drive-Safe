@@ -154,8 +154,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
-
+        //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
+        
+        TextView theAccel = (TextView) findViewById(R.id.accelDisplay);
+        theAccel.setText("Acceleration: " + takeInNewAccelerationData() + "m/s^2");
+        
         checkAcceleration(accelerationData);
 
 //        Log.d(TAG, "onSensorChanged: X:" + event.values[0]
@@ -173,13 +176,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
-//        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-//                + " Speed: " + speed + "m/s");
+        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+                + " Speed: " + speed + "m/s");
         TextView theLat = (TextView) findViewById(R.id.tempLat);
         theLat.setText("Latitude: " + location.getLatitude());
         TextView theLong = (TextView) findViewById(R.id.tempLong);
         theLong.setText("Longitude: " + location.getLongitude());
-        //hello
+        TextView theSpeed = (TextView) findViewById(R.id.speedDisplay);
+        theSpeed.setText("Speed: " + speed + "m/s");
 
         checkSpeed(speed);
 
