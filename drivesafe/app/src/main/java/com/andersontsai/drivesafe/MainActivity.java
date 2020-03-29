@@ -156,9 +156,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (prevTime != 0) { // if second time through iteration or more
             speed = computeSpeed(measure(prevLat,prevLong,location.getLatitude(),location.getLongitude()));
         }
-        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
-        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-                + " Speed: " + speed + "m/s");
+        //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
+//        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+//                + " Speed: " + speed + "m/s");
+        TextView theLat = (TextView) findViewById(R.id.tempLat);
+        theLat.setText("Latitude: " + location.getLatitude());
+        TextView theLong = (TextView) findViewById(R.id.tempLong);
+        theLong.setText("Longitude: " + location.getLongitude());
         prevLat = location.getLatitude();
         prevLong = location.getLongitude();
         prevTime = System.currentTimeMillis();
