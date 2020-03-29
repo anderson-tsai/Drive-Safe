@@ -154,7 +154,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[1] = event.values[1];
         linear_acceleration[2] = event.values[2];
         double accelerationData = takeInNewAccelerationData();
-        HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
+        //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
+        TextView theAccel = (TextView) findViewById(R.id.accelNumDisplay);
+        theAccel.setText(takeInNewAccelerationData() + "m/s^2");
+        TextView theScore = (TextView) findViewById(R.id.scoreNumDisplay);
+        theScore.setText(calculateScore());
 
         checkAcceleration(accelerationData);
 
@@ -178,13 +182,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
-//        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
-//                + " Speed: " + speed + "m/s");
-        TextView theLat = (TextView) findViewById(R.id.tempLat);
-        theLat.setText("Latitude: " + location.getLatitude());
-        TextView theLong = (TextView) findViewById(R.id.tempLong);
-        theLong.setText("Longitude: " + location.getLongitude());
+        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
+                + " Speed: " + speed + "m/s");
+        //TextView theLat = (TextView) findViewById(R.id.tempLat);
+        //theLat.setText("Latitude: " + location.getLatitude());
+        //TextView theLong = (TextView) findViewById(R.id.tempLong);
+        //theLong.setText("Longitude: " + location.getLongitude());
         //hello
+        TextView theSpeed = (TextView) findViewById(R.id.speedNumDisplay);
+        theSpeed.setText(speed + "m/s");
 
         checkSpeed(speed);
         // checkSpeed(25);
