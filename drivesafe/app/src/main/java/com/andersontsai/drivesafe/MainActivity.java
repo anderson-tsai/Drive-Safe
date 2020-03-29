@@ -61,6 +61,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -260,8 +262,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double accelerationData = takeInNewAccelerationData();
         HomeViewModel.setAcceleration(accelerationData);
         //HomeViewModel.setAcceleration(event.values[0], event.values[1], event.values[2], accelerationData);
+        BigDecimal bd = new BigDecimal(accelerationData);
+        bd = bd.round(new MathContext(2));
+        double roundedAccel = bd.doubleValue();
         TextView theAccel = (TextView) findViewById(R.id.accelNumDisplay);
-        theAccel.setText(takeInNewAccelerationData() + "m/s^2");
+        theAccel.setText(roundedAccel + " m/s^2");
         TextView theScore = (TextView) findViewById(R.id.scoreNumDisplay);
         theScore.setText(calculateScore());
         checkAcceleration(accelerationData);
@@ -294,10 +299,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //        HomeViewModel.setLocation(location.getLongitude(), location.getLatitude(), speed);
 //        Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
 //                + " Speed: " + speed + "m/s");
-        TextView theLat = (TextView) findViewById(R.id.tempLat);
-        theLat.setText("Latitude: " + location.getLatitude());
-        TextView theLong = (TextView) findViewById(R.id.tempLong);
-        theLong.setText("Longitude: " + location.getLongitude());
+        BigDecimal bd = new BigDecimal(speed);
+        bd = bd.round(new MathContext(2));
+        double roundedSpeed = bd.doubleValue();
+        TextView theSpeed = (TextView) findViewById(R.id.speedNumDisplay);
+        theSpeed.setText(roundedSpeed + " m/s");
         Log.d(TAG, "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude()
                 + " Speed: " + speed + "m/s");
         //TextView theLat = (TextView) findViewById(R.id.tempLat);
